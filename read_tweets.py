@@ -14,6 +14,7 @@ from evaluate_classifiers import evaluate_classifiers,update_classifier_accuracy
 from eval_classifiers import get_existing_classifiers
 from dircheck import checkDir,createDir
 from confidence_vote import ConfidenceVote
+from polarity import parse_polarity_file
 
 
 
@@ -99,7 +100,8 @@ def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=F
 def train_ngrams_byrank():
 
     # word
-    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=1500)
+    for n in range(1000,5000,500):
+        existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=n)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -281,10 +283,19 @@ if __name__=='__main__':
 
    
 
+    polarity_dict = parse_polarity_file("subclues.tff")
     keys = tweets.keys()
     random.seed(0)
     random.shuffle(keys)
     dist = get_baseline(instances)
+
+    # todo 
+    # Negation
+    # Lexicon polarity
+    # rank for ngram
+    # bigram
+    # train with twitter160 library from stanford.
+
     
 
     # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
@@ -302,7 +313,6 @@ if __name__=='__main__':
 
 
     # this code evaluates classifiers based on alpha / beta = .3
-    #polarity_dict = parse_polarity_file("subclues.tff")
 
 
 

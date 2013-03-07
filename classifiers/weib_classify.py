@@ -1,7 +1,7 @@
 from classify import Classifier
 class WeibClassfier(Classifier):
 	def __init__(self,**kargs):
-		Classifier.__init__(self,tagged_tweets=kargs["tagged_tweets"],instances=kargs["instances"],model=kargs["model"],keys=kargs["keys"])
+		Classifier.__init__(self,tweets=kargs["tweets"],instances=kargs["instances"],model=kargs["model"],keys=kargs["keys"])
 		self.polarity_dict = kargs["polarity_dict"]
 		self.tag_map = kargs["tag_map"]
 		self.tagger = lambda tag : self.tag_map[tag] if tag in self.tag_map else "anypos"
@@ -18,9 +18,9 @@ class WeibClassfier(Classifier):
 		# IMPROVMENTS
 		# we can create a mapping from many emoticons to 3-4 central ones (as seen in other work)
 		features = {}
-		tweet = self.tagged_tweets[key]
+		tweet = self.tweet.target
 		for word,tag in tweet:
 			each = (word,self.tagger(tag))
 			if each in self.polarity_dict:
-				features["weib_polarity({0})".format(self.polarity_dict[each].word)] = self.polarity_dict[each].polarity
+				features["plexicon({0})".format(self.polarity_dict[each].word)] = self.polarity_dict[each].polarity
 		return features
