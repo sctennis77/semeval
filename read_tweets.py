@@ -42,11 +42,11 @@ def get_test_data(test_keys):
         test_instances[each] = instances[each]
     return test_tweets,test_instances
 
-def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r",keep_features=0.3):
+def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r",rank=1500):
 
 
     classifier_dict = {}
-    unigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="unigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
+    unigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="unigrams",word=word,pos=pos,merge=True,model=False,selection=selection,rank=rank)
     if unigram_classifier.id in existing_class:
         print unigram_classifier.id + "already evaluated\n"
         
@@ -76,9 +76,9 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
 
 
 
-def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False,keep_features=0.3):
+def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=1500):
     existing_classifiers = get_existing_classifiers(sub="pickles/target",selection=selection,mode=mode)
-    ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection,keep_features=keep_features)
+    ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection,rank=rank)
     classifier_dict = ngram_classifiers
     if classifier_dict:
         print "evaluating classifier alpha_results for {0}\n".format(classifier_dict.keys())
@@ -96,12 +96,10 @@ def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False,kee
 
 
 
-def train_ngrams_bykeepfeatures():
+def train_ngrams_byrank():
 
     # word
-    kflist = [float(i)/10 for i in range(1,11)]
-    for keep_features in kflist:
-        existing = train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False,keep_features=keep_features)
+    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=1500)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -132,6 +130,13 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
     return classifier_dict
 
 
+def show_confusion_matrix(classifier,vtest):
+# build confusion matrix over test set
+ #test_truth   = [s for (t,s) in v_test]
+#test_predict = [classifier.classify(t) for (t,s) in v_test]
+
+ print 'Confusion Matrix'
+#print nltk.ConfusionMatrix( test_truth, test_predict )
 
 def train_misc_classifiers(selection="default",mode="misc"):
     # ask rich about evaluating votes on training keys instead of testing keys
@@ -162,7 +167,7 @@ def train_all_misc():
     # emoticon, repeat classifiers
     train_misc_classifiers()
 
-def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},cid="all",descrip="keep_features"):
+def use_trained_classifiers(selection="ngramrank",mode="unigram",test_tweets={},test_instances={},cid="all",descrip="rank"):
 
     ud = update_classifier_accuracy(selection=selection,mode=mode)
     if cid=="all":
@@ -184,7 +189,7 @@ def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_ins
             score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(), testset_instances,mode=mode,cid=key,descrip=descrip)
 
 
-def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="r",mode="unigram",cid="all",descrip="keep_features"):
+def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="ngramrank",mode="unigram",cid="all",descrip="rank"):
     ta= target_alpha_vote_dict
     num_correct = 0
     num_wrong =0
@@ -283,12 +288,12 @@ if __name__=='__main__':
     
 
     # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
-   # train_ngrams_bykeepfeatures()
-   # use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="keep_features")
+    train_ngrams_byrank()
+    use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
      
 
-    train_all_misc()
-    use_trained_classifiers(selection="default",mode="misc",test_tweets=testset_tweets,test_instances=testset_instances,cid="indiv",descrip="emotorepeat")
+    """train_all_misc()
+    use_trained_classifiers(selection="default",mode="misc",test_tweets=testset_tweets,test_instances=testset_instances,cid="indiv",descrip="emotorepeat")"""
 
 
 
