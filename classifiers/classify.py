@@ -1,6 +1,7 @@
 import random
 import nltk
 import cPickle
+from nltk.corpus import stopwords
 class Classifier:
 	def __init__(self, **kargs):
 		self.tweets =kargs["tweets"]
@@ -147,17 +148,26 @@ class Classifier:
 
 		return errors
 
-	def ngramify(self,word_list):
+	def ngramify(self,word_list,stop):
 		# creates an ngram from a word_list based on class settings
 		mode = self.mode
 		pos = self.inclued_pos
 		word = self.include_word
-		if word and pos:
-			selection = [(w.lower(),p) for w,p in word_list]
-		elif word:
-			selection = [w.lower() for w,p in word_list]
-		elif pos:
-			selection = [p for w,p in word_list]
+		stopset = set(stopwords.words("english"))
+		if stop:
+			if word and pos:
+				selection = [(w.lower(),p) for w,p in word_list if w.lower() not in stopset]
+			elif word:
+				selection = [w.lower() for w,p in word_list if w.lower() not in stopset]
+			elif pos:
+				selection = [p for w,p in word_list if w.lower() not in stopset]
+		else:
+			if word and pos:
+				selection = [(w.lower(),p) for w,p in word_list]
+			elif word:
+				selection = [w.lower() for w,p in word_list]
+			elif pos:
+				selection = [p for w,p in word_list]
 
 		if mode == "unigrams":
 			word_list = selection
@@ -167,8 +177,8 @@ class Classifier:
 			word_list = nltk.trigrams(selection)
 		return word_list 
 
-	def get_selected_text(self,tweet):
-		word_list = self.ngramify(tweet.target)
+	def get_selected_text(self,tweet,stop=False):
+		word_list = self.ngramify(tweet.target,stop)
 		return word_list
 
 	def classify(self,key,prob=True):

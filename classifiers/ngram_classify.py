@@ -48,7 +48,7 @@ class NgramClassifier(Classifier):
 		word_fd = nltk.FreqDist()
 		tag_fd = nltk.ConditionalFreqDist()
 		for key,tweet in self.tweets.items():
-			word_list = self.get_selected_text(tweet)
+			word_list = self.get_selected_text(tweet,True)
 			label = self.instances[key].label
 			for ngram in word_list:
 				# do we want the tag here
