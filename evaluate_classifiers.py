@@ -42,16 +42,16 @@ def evaluate(results,n=100,fname=None):
 
 
 
-def evaluate_classifiers(v,test_keys,classifier_dict,selection="all",mode="ngram"):
+def evaluate_classifiers(v,test_keys,classifier_dict,selection="r",mode="unigram"):
     print "creating alpha results from classifiers..."
     results = {}
-    if not(checkDir(sub="alpha_results",selection=selection,mode=mode)):
-        createDir(sub="alpha_results",selection=selection,mode=mode)
+    if not(checkDir(sub="alpha_results/target/",selection=selection,mode=mode)):
+        createDir(sub="alpha_results/target/",selection=selection,mode=mode)
     for cid in classifier_dict:
         print "evaulating cid={0}".format(cid)
         #if checkDir('/cresults/indiv')
      
-        outpath = "cresults/{0}/{1}/{2}/{3}.txt".format("alpha_results",selection,mode,cid)
+        outpath = "cresults/alpha_results/target/{0}/{1}/{2}.txt".format(mode,selection,cid)
 
         v.score_tweets_bycid(cid)
         # just need to change here to do combinations of classifiers
@@ -77,12 +77,12 @@ def evaluate_classifiers(v,test_keys,classifier_dict,selection="all",mode="ngram
         v.reset()
 
 
-def update_classifier_accuracy(selection="all",mode="ngram",baseline=0.55):
+def update_classifier_accuracy(selection="r",mode="unigram",baseline=0.55):
 
     # this should be mode 
     updated_dict = {}
-    pic_path = "cresults/pickles/{0}/{1}/".format(selection,mode)
-    outpath = "cresults/{0}/{1}/{2}/".format("alpha_results",selection,mode)
+    pic_path = "cresults/pickles/target/{0}/{1}/".format(mode,selection)
+    outpath = "cresults/alpha_results/target/{0}/{1}/".format(mode,selection)
 
     print "updating classifier results from {0}\tbaseline:{1}\n".format(outpath,baseline)
     a = get_classifier_accuracy(outpath, baseline)

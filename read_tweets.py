@@ -20,14 +20,15 @@ from confidence_vote import ConfidenceVote
 
  
 def write_classifier_dict(keys,classifier_dict,selection,mode):
+    print selection
     print "writing classifier dict"
-    if not(checkDir(mode=mode,sub='pickles',selection=selection)):
-        createDir(mode=mode,sub="pickles",selection=selection)
+    if not(checkDir(mode=mode,sub='pickles/target/',selection=selection)):
+        createDir(mode=mode,sub="pickles/target/",selection=selection)
     for cid,classifier in classifier_dict.items():
         print "pickling cid={0}".format(cid)
         #if checkDir('/cresults/indiv')
      
-        outpath = "cresults/pickles/{0}/{1}/{2}.pkl".format(selection,mode,cid)
+        outpath = "cresults/pickles/target/{0}/{1}/{2}.pkl".format(mode,selection,cid)
         with open(outpath,'wb') as f:
             cPickle.dump(classifier,f)
 
@@ -41,7 +42,8 @@ def get_test_data(test_keys):
         test_instances[each] = instances[each]
     return test_tweets,test_instances
 
-def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="target"):
+def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r"):
+
 
     classifier_dict = {}
     unigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="unigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
@@ -74,7 +76,7 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
 
 
 
-def train_ngram_classifiers(mode="ngram",selection="target",word=True,pos=False):
+def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False):
     existing_classifiers = get_existing_classifiers(sub="pickles",selection=selection,mode=mode)
     ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection)
     classifier_dict = ngram_classifiers
@@ -96,7 +98,7 @@ def train_ngram_classifiers(mode="ngram",selection="target",word=True,pos=False)
 def train_all_ngrams():
 
     # word
-    train_ngram_classifiers(selection="target",word=True,pos=False)
+    train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -154,7 +156,7 @@ def train_all_misc():
     # emoticon, repeat classifiers
     train_misc_classifiers(selection="target")
 
-def use_trained_classifiers(selection="all",mode="ngram",test_tweets={},test_instances={}):
+def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={}):
 
     ud = update_classifier_accuracy(selection=selection,mode=mode)
     print "loaded classifiers for testing:\n{0}".format(ud.keys())
@@ -233,7 +235,7 @@ if __name__=='__main__':
     # ngrams
     mode="ngram"
 
-    target_alpha_vote_dict,tweet_keys = use_trained_classifiers(selection="target", mode=mode, test_tweets=testset_tweets, test_instances = testset_instances)
+    target_alpha_vote_dict,tweet_keys = use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances)
     ta= target_alpha_vote_dict
     num_correct = 0
     num_wrong =0

@@ -168,12 +168,7 @@ class Classifier:
 		return word_list 
 
 	def get_selected_text(self,tweet):
-		if self.selection =="all":
-			word_list = self.ngramify(tweet.tagged_text)
-		elif self.selection == "target":
-			word_list = self.ngramify(tweet.target)
-		elif self.selection == "context":
-			word_list = self.ngramify(tweet.context)
+		word_list = self.ngramify(tweet.target)
 		return word_list
 
 	def classify(self,key,prob=True):
