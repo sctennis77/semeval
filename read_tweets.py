@@ -104,7 +104,7 @@ def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=F
 def train_ngrams_byrank():
 
     # word
-    for n in range(1000,5000,500):
+    for n in range(1000,3500,500):
         existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=n)
     
     # word + pos
