@@ -327,7 +327,7 @@ if __name__=='__main__':
     
 
     # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
-    #train_ngrams_byrank()
+    train_ngrams_byrank()
     train_all_misc()
     ngram_res_dict = use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
     misc_res_dict = use_trained_classifiers(selection="default", mode="misc", test_tweets=testset_tweets, test_instances = testset_instances, cid="indiv", descrip="emotorepeat")
@@ -339,7 +339,10 @@ if __name__=='__main__':
             accum_votes[key] = {}
         print "\n{0}\t{1}\n".format(key,testset_instances[key].label)
         for class_key,result in res_dict.items():
-                vote,conf = result[key]
+                if key in result:
+                  vote,conf = result[key]
+                else:
+                  vote,conf = ("novote",0.0)
 
                 accum_votes[key][class_key] = (vote,conf)
         tmp = accum_votes[key]
