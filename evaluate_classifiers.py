@@ -89,7 +89,9 @@ def update_classifier_accuracy(selection="all",mode="ngram",baseline=0.55):
     for class_key,result in a.items():
         if result:
             pic_file = pic_path + class_key +".pkl"
-            cl = cPickle.load(open(pic_file,'r'))
+            with open(pic_file,'rb') as f:
+              print pic_file
+              cl = cPickle.load(f)
             cl.alpha_acc = result
             cl.baseline = baseline
             updated_dict[class_key] = cl
