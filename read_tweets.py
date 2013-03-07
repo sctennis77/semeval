@@ -55,13 +55,13 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
         unigram_classifier.show_features(20)
         classifier_dict[unigram_classifier.id] = unigram_classifier
    
-    """bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
+    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
     if bigram_classifier.id in existing_class:
         print bigram_classifier.id + "already evaluated"
     else:
         bigram_classifier.train_classifier()
         bigram_classifier.show_features(20)
-        classifier_dict[bigram_classifier.id] = bigram_classifier"""
+        classifier_dict[bigram_classifier.id] = bigram_classifier
     """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
     trigram_classifier.train_classifier()
     trigram_classifier.show_features(20)"""
@@ -158,24 +158,65 @@ def train_all_misc():
     # emoticon, repeat classifiers
     train_misc_classifiers(selection="target")
 
-def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},key="all"):
+def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},cid="all"):
 
     ud = update_classifier_accuracy(selection=selection,mode=mode)
-    print "loaded classifiers for testing:\n{0}".format(ud.keys())
-    if key=="all":
+    if cid=="all":
+        print "confidence voting combined dict {0}".format(ud,keys())
         cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=ud,selection=selection)
         cv.score_all_classifiers()
+        for each in test_tweets.keys():
+            cv.alpha_vote(each)
+        alpha_vote_dict = cv.evaluate_results()
     else:
-        cdict = {key:ud[key]}
-        cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=cdict,selection=selection)
-        cv.score_all_classifiers()
+        for key in ud:
+            print "confidence voting {0}".format(key)
+            cdict = {key:ud[key]}
+            cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=cdict,selection=selection)
+            cv.score_all_classifiers()
+            for each in test_tweets.keys():
+                cv.alpha_vote(each)
+            alpha_vote_dict = cv.evaluate_results()
+            score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(), testset_instances,mode=mode,cid=key)
 
-    for each in test_tweets.keys():
-        cv.alpha_vote(each)
-    alpha_vote_dict = cv.evaluate_results()
-    return alpha_vote_dict,test_tweets.keys()
 
+def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="r",mode="unigram",cid="all"):
+    ta= target_alpha_vote_dict
+    num_correct = 0
+    num_wrong =0
+    neg = 0
+    pos = 0
+    for key in tweet_keys:
+        choice = ""
+        conf = 0
+        result = ta[key]
+        actual = testset_instances[key].label
+        for label,value in result.items():
+            if value > conf:
+                choice = label
+                conf = value
+        if choice == actual:
+            num_correct+=1
+        else:
+            num_wrong+=1
+        if actual == "negative":
+            neg+=1
+        if actual =="positive":
+            pos+=1
+        #if choice =="negative" or actual == "negative":
+          #  print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
 
+    total = num_correct + num_wrong
+    percent = float(num_correct)/total
+    result_file = "{0}/{1}/{2}{3}.txt".format("cEvaluations",mode,len(tweet_keys),cid)
+
+    with open(result_file,"wb") as f:
+        # total,correct,percent,numneg,numpos
+        outstr = "{0},{1},{2},{3},{4}\n".format(total,num_correct,percent,neg,pos)
+        f.write(outstr)
+    print "num_neg = ",neg
+    print "num_pos = ",pos
+    print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
 
 if __name__=='__main__':
     # so this will eventually be python read_tweets.py <tsvfile> <task> <training> <pickle files if training false>
@@ -243,35 +284,8 @@ if __name__=='__main__':
     # ngrams
     mode="ngram"
 
-    target_alpha_vote_dict,tweet_keys = use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances)
-    ta= target_alpha_vote_dict
-    num_correct = 0
-    num_wrong =0
-    neg = 0
-    for key in tweet_keys:
-        choice = ""
-        conf = 0
-        result = ta[key]
-        print key
-        actual = testset_instances[key].label
-
-        for label,value in result.items():
-            if value > conf:
-                choice = label
-                conf = value
-            print label,value
-        if choice == actual:
-            num_correct+=1
-        else:
-            num_wrong+=1
-        if actual == "negative":
-            neg+=1
-        #if choice =="negative" or actual == "negative":
-          #  print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
-    total = num_correct + num_wrong
-    print "num_neg = ",neg
-    print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
-
+    use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv")
+   
 
 
 

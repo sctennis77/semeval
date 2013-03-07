@@ -77,6 +77,32 @@ def evaluate_classifiers(v,test_keys,classifier_dict,selection="r",mode="unigram
         v.reset()
 
 
+def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances):
+    ta= target_alpha_vote_dict
+    num_correct = 0
+    num_wrong =0
+    neg = 0
+    for key in tweet_keys:
+        choice = ""
+        conf = 0
+        result = ta[key]
+        actual = testset_instances[key].label
+        for label,value in result.items():
+            if value > conf:
+                choice = label
+                conf = value
+        if choice == actual:
+            num_correct+=1
+        else:
+            num_wrong+=1
+        if actual == "negative":
+            neg+=1
+        #if choice =="negative" or actual == "negative":
+          #  print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
+    total = num_correct + num_wrong
+    print "num_neg = ",neg
+    print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
+
 def update_classifier_accuracy(selection="r",mode="unigram",baseline=0.55):
 
     # this should be mode 
