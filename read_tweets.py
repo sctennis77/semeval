@@ -28,7 +28,8 @@ def write_classifier_dict(keys,classifier_dict,selection,mode):
         #if checkDir('/cresults/indiv')
      
         outpath = "cresults/pickles/{0}/{1}/{2}.pkl".format(selection,mode,cid)
-        cPickle.dump(classifier,open(outpath,'w'))
+        with open(outpath,'wb') as f:
+            cPickle.dump(classifier,f,cPickle.HIGHEST_PROTOCOL)
 
 
 
@@ -52,13 +53,13 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
         unigram_classifier.show_features(20)
         classifier_dict[unigram_classifier.id] = unigram_classifier
    
-    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
+    """bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
     if bigram_classifier.id in existing_class:
         print bigram_classifier.id + "already evaluated"
     else:
         bigram_classifier.train_classifier()
         bigram_classifier.show_features(20)
-        classifier_dict[bigram_classifier.id] = bigram_classifier
+        classifier_dict[bigram_classifier.id] = bigram_classifier"""
     """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
     trigram_classifier.train_classifier()
     trigram_classifier.show_features(20)"""
