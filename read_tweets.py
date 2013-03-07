@@ -55,13 +55,13 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
         unigram_classifier.show_features(20)
         classifier_dict[unigram_classifier.id] = unigram_classifier
    
-    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
+    """bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
     if bigram_classifier.id in existing_class:
         print bigram_classifier.id + "already evaluated"
     else:
         bigram_classifier.train_classifier()
         bigram_classifier.show_features(20)
-        classifier_dict[bigram_classifier.id] = bigram_classifier
+        classifier_dict[bigram_classifier.id] = bigram_classifier"""
     """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
     trigram_classifier.train_classifier()
     trigram_classifier.show_features(20)"""
@@ -76,9 +76,9 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
 
 
 
-def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False):
+def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False,keep_features=0.3):
     existing_classifiers = get_existing_classifiers(sub="pickles/target",selection=selection,mode=mode)
-    ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection)
+    ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection,keep_features=keep_features)
     classifier_dict = ngram_classifiers
     if classifier_dict:
         print "evaluating classifier alpha_results for {0}\n".format(classifier_dict.keys())
@@ -96,11 +96,12 @@ def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False):
 
 
 
-def train_all_ngrams():
+def train_ngrams_bykeepfeatures():
 
     # word
-    existing = train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False)
-    return existing
+    kflist = [float(i)/10 for i in range(1,11)]
+    for keep_features in kflist:
+        existing = train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False,keep_features=keep_features)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -280,9 +281,7 @@ if __name__=='__main__':
     #combined_ngrames,used_ngrams = combine_evaluated_ngrams()
     
 
-    existing = train_all_ngrams()
-    # ngrams
-    mode="ngram"
+    train_ngrams_bykeepfeatures()
 
     use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv")
    
