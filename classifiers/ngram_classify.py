@@ -19,7 +19,7 @@ class NgramClassifier(Classifier):
 		self.ngram_dict = self.get_ranked_ngrams()
 		self.ranked_ngrams = sorted(self.ngram_dict,key = lambda x: self.ngram_dict[x],reverse=True)
 		self.num_ngrams = len(self.ranked_ngrams)
-		self.rank = self.num_ngrams *self.keep_features
+		self.rank = int(self.num_ngrams *self.keep_features)
 		self.prepare_features()
 
 	def __str__(self):
