@@ -29,7 +29,7 @@ def prepare_tweet_data(tsvfile,task):
 
 
     
-    return finished_tweets,instances
+    return finished_tweets,instances,tag_map
 
 def get_target_context(word_list,sidx,eidx):
     if sidx==eidx:

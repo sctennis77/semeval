@@ -117,14 +117,14 @@ def update_classifier_accuracy(selection="r",mode="unigram",baseline=0.55):
             pic_file = pic_path + class_key +".pkl"
             with open(pic_file,'rb') as f:
                 print pic_file
-                try:
-                    cl = cPickle.load(f)
-                    cl.alpha_acc = result
-                    cl.baseline = baseline
-                    updated_dict[class_key] = cl
-                    print "updated --> {0}\n".format(pic_file)
-                except:
-                    print "error pickling classifier --> {0}\n".format(class_key)
+                #try:
+                cl = cPickle.load(f)
+                cl.alpha_acc = result
+                cl.baseline = baseline
+                updated_dict[class_key] = cl
+                print "updated --> {0}\n".format(pic_file)
+               # except:
+                   # print "error pickling classifier --> {0}\n".format(class_key)
         else:
             print "skipping classifier --> {0}\n".format(class_key)
     return updated_dict

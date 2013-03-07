@@ -9,6 +9,7 @@ import cPickle
 from classifiers.ngram_classify import NgramClassifier
 from classifiers.repeat_classify import RepeatClassifier
 from classifiers.emoticon_classify import EmoticonClassifier
+from classifiers.weib_classify import WeibClassifier
 from vote import Vote
 from evaluate_classifiers import evaluate_classifiers,update_classifier_accuracy,get_baseline
 from eval_classifiers import get_existing_classifiers
@@ -27,13 +28,14 @@ def write_classifier_dict(keys,classifier_dict,selection,mode):
         createDir(mode=mode,sub="pickles/target/",selection=selection)
     for cid,classifier in classifier_dict.items():
         print "pickling cid={0}".format(cid)
+        print classifier
         #if checkDir('/cresults/indiv')
         outpath = "cresults/pickles/target/{0}/{1}/{2}.pkl".format(mode,selection,cid)
-        try:
-            with open(outpath,'wb') as f:
-                cPickle.dump(classifier,f)
-        except:
-            print "failed pickling classifier to {0}".format(outpath)
+        #try:
+        with open(outpath,'wb') as f:
+            cPickle.dump(classifier,f)
+       # except:
+        #    print "failed pickling classifier to {0}".format(outpath)
 
 
 
@@ -104,8 +106,7 @@ def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=F
 def train_ngrams_byrank():
 
     # word
-    for n in range(1000,3500,500):
-        existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=n)
+    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=2000)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -132,7 +133,15 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
         repeat_classifier.train_classifier()
         repeat_classifier.show_features()
         classifier_dict[repeat_classifier.id]=repeat_classifier
-      
+
+    weib_classifier = WeibClassifier(tweets=tweets,instances=instances,keys=keys,model=False,polarity_dict=polarity_dict,selection=selection,tag_map=tag_map)
+    if weib_classifier.id in existing_class:
+        print weib_classifier.id + " already evaluated"
+    else:
+        weib_classifier.train_classifier()
+        weib_classifier.show_features()
+        classifier_dict[weib_classifier.id] = weib_classifier
+
     return classifier_dict
 
 
@@ -174,7 +183,7 @@ def train_all_misc():
     train_misc_classifiers()
 
 def use_trained_classifiers(selection="ngramrank",mode="unigram",test_tweets={},test_instances={},cid="all",descrip="rank"):
-
+    total_vote_dict = {}
     ud = update_classifier_accuracy(selection=selection,mode=mode)
     if cid=="all":
         print "confidence voting combined dict {0}".format(ud,keys())
@@ -183,6 +192,8 @@ def use_trained_classifiers(selection="ngramrank",mode="unigram",test_tweets={},
         for each in test_tweets.keys():
             cv.alpha_vote(each)
         alpha_vote_dict = cv.evaluate_results()
+        result_dict = score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(),testset_instances,selection=selection,mode=mode,cid=cid,descrip=descrip)
+        total_vote_dict["all"] = result_dict
     else:
         for key in ud:
             print "confidence voting {0}".format(key)
@@ -192,7 +203,10 @@ def use_trained_classifiers(selection="ngramrank",mode="unigram",test_tweets={},
             for each in test_tweets.keys():
                 cv.alpha_vote(each)
             alpha_vote_dict = cv.evaluate_results()
-            score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(), testset_instances,mode=mode,cid=key,descrip=descrip)
+            result_dict = score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(),testset_instances,selection=selection,mode=mode,cid=key,descrip=descrip)
+            total_vote_dict[key]= result_dict
+    return total_vote_dict
+
 
 
 def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="ngramrank",mode="unigram",cid="all",descrip="rank"):
@@ -201,23 +215,26 @@ def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instanc
     num_wrong =0
     neg = 0
     pos = 0
+    voted_dict = {}
     for key in tweet_keys:
         choice = ""
         conf = 0
         result = ta[key]
-        actual = testset_instances[key].label
         for label,value in result.items():
             if value > conf:
                 choice = label
                 conf = value
-        if choice == actual:
-            num_correct+=1
-        else:
-            num_wrong+=1
-        if actual == "negative":
-            neg+=1
-        if actual =="positive":
-            pos+=1
+            voted_dict[key] = (choice,conf)
+        actual = testset_instances[key].label
+        if actual:
+            if choice == actual:
+                num_correct+=1
+            else:
+                num_wrong+=1
+            if actual == "negative":
+                neg+=1
+            if actual =="positive":
+                pos+=1
         #if choice =="negative" or actual == "negative":
           #  print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
 
@@ -232,6 +249,8 @@ def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instanc
     print "num_neg = ",neg
     print "num_pos = ",pos
     print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
+    return voted_dict
+
 
 if __name__=='__main__':
     # so this will eventually be python read_tweets.py <tsvfile> <task> <training> <pickle files if training false>
@@ -256,8 +275,9 @@ if __name__=='__main__':
      ##  instances = emot_instances
 
         # normal dataset
-    tweets,instances = prepare_tweet_data(tsvfile,task)
-    testset_tweets,testset_instances = prepare_tweet_data(testfile, task)        
+    tweets,instances,tag_map = prepare_tweet_data(tsvfile,task)
+    print tag_map
+    testset_tweets,testset_instances,test_tag_map, = prepare_tweet_data(testfile, task)        
     # lazy cleaning of objective and neutral
     objectives = [key for key in tweets if instances[key].label == "objective" or instances[key].label == "neutral"]
     popped = 0
@@ -303,9 +323,18 @@ if __name__=='__main__':
     
 
     # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
-    train_ngrams_byrank()
-    use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
-     
+    #train_ngrams_byrank()
+    train_all_misc()
+    ngram_res_dict = use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
+    misc_res_dict = use_trained_classifiers(selection="default", mode="misc", test_tweets=testset_tweets, test_instances = testset_instances, cid="indiv", descrip="emotorepeat")
+    print misc_res_dict.keys()
+    res_dict = dict(ngram_res_dict.items() + misc_res_dict.items())
+    for key in testset_instances.keys():
+        print "\n{0}\n".format(key)
+        for class_key,result in res_dict.items():
+                vote,conf = result[key]
+                print class_key.split(",")[0],vote,conf,testset_instances[key].label
+
 
     """train_all_misc()
     use_trained_classifiers(selection="default",mode="misc",test_tweets=testset_tweets,test_instances=testset_instances,cid="indiv",descrip="emotorepeat")"""
