@@ -1,6 +1,6 @@
 from nltk.metrics import BigramAssocMeasures
 from classify import Classifier,nltk
-
+from nltk.corpus import stopwords
 # feature set = lists of ({<feature_dict>},classification) pairs
 # to combine dictionaries dict(d1.items() + d2.items())
 # todo --> build a voting system
@@ -13,13 +13,12 @@ class NgramClassifier(Classifier):
 		self.inclued_pos = kargs["pos"]
 		self.include_word = kargs["word"]
 		self.mode= kargs["mode"]
-		self.keep_features = float(kargs["keep_features"])
-		self.id="ngram{0},m:{1},w:{2},t:{3},s:{4},r:{5}".format(self.num_items,self.mode,self.include_word,self.inclued_pos,self.selection,self.keep_features)
+		self.rank = kargs['rank'] #int(self.num_ngrams *self.keep_features)
+		self.id="ngram{0},m:{1},w:{2},t:{3},s:{4},r:{5}".format(self.num_items,self.mode,self.include_word,self.inclued_pos,self.selection,self.rank)
 		self.debug=False
 		self.ngram_dict = self.get_ranked_ngrams()
 		self.ranked_ngrams = sorted(self.ngram_dict,key = lambda x: self.ngram_dict[x],reverse=True)
 		self.num_ngrams = len(self.ranked_ngrams)
-		self.rank = int(self.num_ngrams *self.keep_features)
 		self.prepare_features()
 
 	def __str__(self):
@@ -88,8 +87,7 @@ class NgramClassifier(Classifier):
 		#		if ngram in document_ngrams:
 		#			features["contains(%s)"%str(ngram)]=(ngram in document_ngrams)
 		#	else:
-
-			features["%s(%s)"%(self.mode,str(ngram))]=(ngram in document_ngrams)
+			features["%s"%(str(ngram))]=(ngram in document_ngrams)
 
 		return features
 
