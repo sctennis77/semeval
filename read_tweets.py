@@ -234,14 +234,32 @@ if __name__=='__main__':
 
     target_alpha_vote_dict,tweet_keys = use_trained_classifiers(selection="target", mode=mode, test_tweets=testset_tweets, test_instances = testset_instances)
     ta= target_alpha_vote_dict
+    num_correct = 0
+    num_wrong =0
+    neg = 0
     for key in tweet_keys:
+        choice = ""
+        conf = 0
+        result = ta[key]
         print key
         actual = testset_instances[key].label
-        tar = "tar: {0}".format(ta[key])
-        act = "**act: {0}".format(actual)
-        print tar
-        print act
-        print 
+
+        for label,value in result.items():
+            if value > conf:
+                choice = label
+                conf = value
+            print label,value
+        if choice == actual:
+            num_correct+=1
+        else:
+            num_wrong+=1
+        if actual == "negative":
+            neg+=1
+        if choice =="negative" or actual == "negative":
+            print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
+    total = num_correct + num_wrong
+    print "num_neg = ",neg
+    print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
 
 
 
