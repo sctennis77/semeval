@@ -27,9 +27,9 @@ def get_classifier_accuracy(dir_path,baseline=.5):
 	return acc_classifiers
 
 
-def get_existing_classifiers(sub="pickles",selection="all",mode="ngram"):
+def get_existing_classifiers(sub="pickles",selection="r",mode="unigram"):
 	try:
-	    pic_path = "cresults/{0}/{1}/{2}".format(sub,selection,mode)
+	    pic_path = "cresults/{0}/{1}/{2}".format(sub,mode,selection)
 	    data_files = os.listdir(pic_path)
 	    data_files =[each.replace(".pkl","") for each in data_files]
 	except:

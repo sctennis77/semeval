@@ -77,7 +77,7 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
 
 
 def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False):
-    existing_classifiers = get_existing_classifiers(sub="pickles",selection=selection,mode=mode)
+    existing_classifiers = get_existing_classifiers(sub="pickles/target",selection=selection,mode=mode)
     ngram_classifiers = get_ngram_classifiers(keys, existing_classifiers,word=word,pos=pos,selection=selection)
     classifier_dict = ngram_classifiers
     if classifier_dict:
@@ -92,13 +92,15 @@ def train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False):
     # need some logic going in --> are we using already classified stuff or making new mode?
     else:
         print "already trained {0}".format(existing_classifiers)
+    return existing_classifiers
 
 
 
 def train_all_ngrams():
 
     # word
-    train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False)
+    existing = train_ngram_classifiers(mode="unigram",selection="r",word=True,pos=False)
+    return existing
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -156,12 +158,18 @@ def train_all_misc():
     # emoticon, repeat classifiers
     train_misc_classifiers(selection="target")
 
-def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={}):
+def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},key="all"):
 
     ud = update_classifier_accuracy(selection=selection,mode=mode)
     print "loaded classifiers for testing:\n{0}".format(ud.keys())
-    cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=ud,selection=selection)
-    cv.score_all_classifiers()
+    if key=="all":
+        cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=ud,selection=selection)
+        cv.score_all_classifiers()
+    else:
+        cdict = {key:ud[key]}
+        cv = ConfidenceVote(tweets= test_tweets, instances=test_instances,classifiers=cdict,selection=selection)
+        cv.score_all_classifiers()
+
     for each in test_tweets.keys():
         cv.alpha_vote(each)
     alpha_vote_dict = cv.evaluate_results()
@@ -231,7 +239,7 @@ if __name__=='__main__':
     #combined_ngrames,used_ngrams = combine_evaluated_ngrams()
     
 
-    train_all_ngrams()
+    existing = train_all_ngrams()
     # ngrams
     mode="ngram"
 
@@ -258,8 +266,8 @@ if __name__=='__main__':
             num_wrong+=1
         if actual == "negative":
             neg+=1
-        if choice =="negative" or actual == "negative":
-            print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
+        #if choice =="negative" or actual == "negative":
+          #  print "vote: {0} ({1})\tactual: {2}\n".format(choice,conf,actual)
     total = num_correct + num_wrong
     print "num_neg = ",neg
     print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
