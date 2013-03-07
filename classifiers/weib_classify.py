@@ -22,5 +22,6 @@ class WeibClassfier(Classifier):
 		for word,tag in tweet:
 			each = (word,self.tagger(tag))
 			if each in self.polarity_dict:
-				features["plexicon({0})".format(self.polarity_dict[each].word)] = self.polarity_dict[each].polarity
+				features["lexicon_label({0})".format(self.polarity_dict[each].word)] = self.polarity_dict[each].polarity
+				features["lexicon_strength({0})".format(self.polarity_dict[each].type)] = self.polarity_dict[each].type
 		return features

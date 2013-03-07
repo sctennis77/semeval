@@ -12,7 +12,7 @@ def parse_polarity_file(fname,DEBUG=False):
 				if word_info.count("len1=1")>1:
 					word_info.remove("len1=1")
 				cleaned_info = [element.split("=")[1] for element in word_info if len(element.split("="))==2]
-				typ,length,word,pos,stem,polarity = cleaned_info
+				typ,length,word,pos,stem,polarity = cleaned_infoq
 				polarity_word = PolarityWord(type=typ,length=length,word=word,pos=pos,stem=stem,polarity=polarity,source="weibe")
 				polarity_dict[(polarity_word.word,polarity_word.pos)] = polarity_word
 				
