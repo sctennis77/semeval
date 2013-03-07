@@ -11,7 +11,7 @@ from classifiers.repeat_classify import RepeatClassifier
 from classifiers.emoticon_classify import EmoticonClassifier
 from vote import Vote
 from evaluate_classifiers import evaluate_classifiers,update_classifier_accuracy,get_baseline
-from cresults.eval_classifiers import get_existing_classifiers
+from eval_classifiers import get_existing_classifiers
 from dircheck import checkDir,createDir
 from confidence_vote import ConfidenceVote
 

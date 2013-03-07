@@ -1,6 +1,6 @@
 # file to do alpha evaluation from the classifiers using vote dicts
 from dircheck import createDir, checkDir
-from cresults.eval_classifiers import get_classifier_accuracy
+from eval_classifiers import get_classifier_accuracy
 import cPickle
 def get_baseline(instances):
 	dist = {}
