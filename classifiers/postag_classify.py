@@ -4,11 +4,11 @@ from classify import Classifier
 		#self.tags = dict([("N","noun"),("^","noun"),("Z","noun"),("S","noun"),("O","noun"),("L","noun"),
 		#("V","verb"),("R","adverb"),("A","adj"),("D","anypos"),("T","anypos"),("P","anypos"),("!","anypos")]).keys()
 		#r
-class PosTagClassfier(Classifier):
+class PosTagClassifier(Classifier):
 	def __init__(self,**kargs):
-		Classifier.__init__(self,tagged_tweets=kargs["tagged_tweets"],instances=kargs["instances"],model=kargs["model"],keys=kargs["keys"])
+		Classifier.__init__(self,tweets=kargs["tweets"],instances=kargs["instances"],model=kargs["model"],keys=kargs["keys"],selection=kargs["selection"])
 		self.tag = kargs["tag"]
-		self.id="tagcount{0},tag{1}".format(self.num_items,self.tag)
+		self.id="postag{0},t:{2},s:{1}".format(self.num_items,self.selection,self.tag)
 
 
 
@@ -22,4 +22,4 @@ class PosTagClassfier(Classifier):
 		tweet = self.tagged_tweets[key]
 		tags = [t for w,t in tweet]
 		count = tags.count(self.tag)
-		return {"tag_proportion(%s)"%(self.tag):count}
+		return {"tcount(%s)"%(self.tag):count}

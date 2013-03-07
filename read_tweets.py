@@ -10,6 +10,7 @@ from classifiers.ngram_classify import NgramClassifier
 from classifiers.repeat_classify import RepeatClassifier
 from classifiers.emoticon_classify import EmoticonClassifier
 from classifiers.weib_classify import WeibClassifier
+from classifiers.postag_classify import PosTagClassifier
 from vote import Vote
 from evaluate_classifiers import evaluate_classifiers,update_classifier_accuracy,get_baseline
 from eval_classifiers import get_existing_classifiers
@@ -22,7 +23,6 @@ from polarity import parse_polarity_file
 
  
 def write_classifier_dict(keys,classifier_dict,selection,mode):
-    print selection
     print "writing classifier dict"
     if not(checkDir(mode=mode,sub='pickles/target/',selection=selection)):
         createDir(mode=mode,sub="pickles/target/",selection=selection)
@@ -141,6 +141,10 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
         weib_classifier.train_classifier()
         weib_classifier.show_features()
         classifier_dict[weib_classifier.id] = weib_classifier
+
+   # tags = ["E","!","A","!"]
+
+   # tagcount_classifer = PosTagClassifier(tweets=tweets,instances=instances,keys=keys,model=False,tags=tags,selection=selection)
 
     return classifier_dict
 
@@ -328,12 +332,20 @@ if __name__=='__main__':
     ngram_res_dict = use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
     misc_res_dict = use_trained_classifiers(selection="default", mode="misc", test_tweets=testset_tweets, test_instances = testset_instances, cid="indiv", descrip="emotorepeat")
     print misc_res_dict.keys()
+    accum_votes = {}
     res_dict = dict(ngram_res_dict.items() + misc_res_dict.items())
     for key in testset_instances.keys():
-        print "\n{0}\n".format(key)
+        if key not in accum_votes:
+            accum_votes[key] = {}
+        print "\n{0}\t{1}\n".format(key,testset_instances[key].label)
         for class_key,result in res_dict.items():
                 vote,conf = result[key]
-                print class_key.split(",")[0],vote,conf,testset_instances[key].label
+
+                accum_votes[key][class_key] = (vote,conf)
+        tmp = accum_votes[key]
+        ranked = sorted(tmp,key = lambda x: tmp[x][1],reverse=True)
+        for val,ckey in enumerate(ranked):
+            print val,ckey.split(",")[0],tmp[ckey]
 
 
     """train_all_misc()
