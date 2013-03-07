@@ -1,0 +1,4 @@
+semeval
+=======
+
+cleaned semeval project
