@@ -42,11 +42,11 @@ def get_test_data(test_keys):
         test_instances[each] = instances[each]
     return test_tweets,test_instances
 
-def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r"):
+def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r",keep_features=0.3):
 
 
     classifier_dict = {}
-    unigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="unigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
+    unigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="unigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
     if unigram_classifier.id in existing_class:
         print unigram_classifier.id + "already evaluated\n"
         
