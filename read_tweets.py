@@ -209,11 +209,11 @@ def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instanc
 
     total = num_correct + num_wrong
     percent = float(num_correct)/total
-    result_file = "{0}/{1}/{2}{3}.txt".format("cEvaluations",mode,len(tweet_keys),cid)
+    result_file = "{0}/{1}/keep_features{2}.txt".format("cEvaluations",mode,len(tweet_keys))
 
-    with open(result_file,"wb") as f:
+    with open(result_file,"a") as f:
         # total,correct,percent,numneg,numpos
-        outstr = "{0},{1},{2},{3},{4}\n".format(total,num_correct,percent,neg,pos)
+        outstr = "{5}\t{0}\t{1}\t{2}\t{3}\t{4}\n".format(total,num_correct,percent,neg,pos,cid)
         f.write(outstr)
     print "num_neg = ",neg
     print "num_pos = ",pos
