@@ -28,10 +28,14 @@ def write_classifier_dict(keys,classifier_dict,selection,mode):
     for cid,classifier in classifier_dict.items():
         print "pickling cid={0}".format(cid)
         #if checkDir('/cresults/indiv')
-     
         outpath = "cresults/pickles/target/{0}/{1}/{2}.pkl".format(mode,selection,cid)
-        with open(outpath,'wb') as f:
-            cPickle.dump(classifier,f)
+        try:
+            with open(outpath,'wb') as f:
+                cPickle.dump(classifier,f)
+        except:
+            print "failed pickling classifier to {0}".format(outpath)
+
+
 
 
 
