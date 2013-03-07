@@ -89,7 +89,7 @@ class NgramClassifier(Classifier):
 		#			features["contains(%s)"%str(ngram)]=(ngram in document_ngrams)
 		#	else:
 
-			features["%s-%s(%s)"%(self.mode,self.selection,str(ngram))]=(ngram in document_ngrams)
+			features["%s(%s)"%(self.mode,str(ngram))]=(ngram in document_ngrams)
 
 		return features
 
