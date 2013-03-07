@@ -29,7 +29,7 @@ def write_classifier_dict(keys,classifier_dict,selection,mode):
      
         outpath = "cresults/pickles/{0}/{1}/{2}.pkl".format(selection,mode,cid)
         with open(outpath,'wb') as f:
-            cPickle.dump(classifier,f,cPickle.HIGHEST_PROTOCOL)
+            cPickle.dump(classifier,f)
 
 
 
