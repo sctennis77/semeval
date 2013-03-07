@@ -63,6 +63,7 @@ def assign_target_phrase(tweets,instances,tagged_tweets):
     assigned_tweets = {}
     for key,tweet in tweets.items():
         tagged_text = tagged_tweets[key]
+        tweet.tagged_tweet =tagged_text
         other_targets = tweet.other_targets
         curr_sidx =instances[key].startpos
         curr_eidx = instances[key].endpos

@@ -34,7 +34,7 @@ class RepeatClassifier(Classifier):
 	def get_all_repeats(self):
 		repeat_dict = {}
 		for key,tweet in self.tweets.items():
-			word_list = tweet.tagged_text
+			word_list = tweet.tagged_tweet
 			for word,pos in word_list:
 				repeat = self.check_repeat_letters(word)
 				if repeat:
@@ -45,7 +45,7 @@ class RepeatClassifier(Classifier):
 		features = {}
 		words = [word for word,tag in self.get_selected_text(self.tweets[key])]
 		for repeat in set(self.repeat_dict.keys()):
-			features["repeat--{0}({1})".format(self.selection,repeat)] = (repeat in words)
+			features["repeat({0})".format(repeat)] = (repeat in words)
 
 		return features
 

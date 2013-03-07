@@ -107,21 +107,21 @@ def train_ngrams_bykeepfeatures():
     #train_ngram_classifiers(selection="all",word=True,pos=True)
 
 
-def get_misc_classifiers(keys,existing_class = {},selection="target"):     
+def get_misc_classifiers(keys,existing_class = {},selection="default"):     
 
     #weib_classifier = WeibClassfier(tagged_tweets=tagged_tweets,instances=instances,keys=keys,polarity_dict=polarity_dict,tag_map=tag_map,model=False)
     #weib_classifier.train_classifier()
     #classifier_dict[weib_classifier.id] = weib_classifier
 
     classifier_dict = {}
-    emot_classifier = EmoticonClassifier(tweets=tweets,instances=instances,keys=keys,merge=True,model=False,selection=selection)
+    emot_classifier = EmoticonClassifier(tweets=tweets,instances=instances,keys=keys,model=False,selection=selection)
     if emot_classifier.id in existing_class:
         print emot_classifier.id + " already evaluated"
     else:
         emot_classifier.train_classifier()
         emot_classifier.show_features()
         classifier_dict[emot_classifier.id]=emot_classifier
-    repeat_classifier = RepeatClassifier(tweets=tweets,instances=instances,keys=keys,merge=True,model=False,selection=selection)
+    repeat_classifier = RepeatClassifier(tweets=tweets,instances=instances,keys=keys,model=False,selection=selection)
     if repeat_classifier.id in existing_class:
         print repeat_classifier.id + " already evaluated"
     else:
@@ -131,11 +131,13 @@ def get_misc_classifiers(keys,existing_class = {},selection="target"):
       
     return classifier_dict
 
-def train_misc_classifiers(selection="all",mode="misc"):
+
+
+def train_misc_classifiers(selection="default",mode="misc"):
     # ask rich about evaluating votes on training keys instead of testing keys
-    existing_classifiers = get_existing_classifiers(sub="pickles",selection=selection,mode=mode)
+    existing_classifiers = get_existing_classifiers(sub="pickles/target",selection=selection,mode=mode)
     print "existing {0}".format(existing_classifiers)
-    misc_classifiers = get_misc_classifiers(keys,existing_class=existing_classifiers,selection="all")
+    misc_classifiers = get_misc_classifiers(keys,existing_class=existing_classifiers,selection=selection)
     classifier_dict = misc_classifiers
     if classifier_dict:
         print "evaluating classifier alpha_results for {0}\n".format(classifier_dict.keys())
@@ -147,7 +149,8 @@ def train_misc_classifiers(selection="all",mode="misc"):
         v = Vote(tweets=test_tweets,instances=test_instances,classifiers=classifier_dict,selection=selection)
         evaluate_classifiers(v, test_keys,classifier_dict,mode=mode,selection=selection)
     else:
-        print "no classifiers to train!\n"
+        print  "already tained {0}".format(existing_classifiers)
+    return existing_classifiers
     # need some logic going in --> are we using already classified stuff or making new mode?
     #  AT THIS POINT WE HAVE TRAINED THE CLASSIFIERS
     # update classifier_accuracy loads classifiers from pickles with their corresponding accuracy
@@ -157,9 +160,9 @@ def train_misc_classifiers(selection="all",mode="misc"):
 def train_all_misc():
 
     # emoticon, repeat classifiers
-    train_misc_classifiers(selection="target")
+    train_misc_classifiers()
 
-def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},cid="all"):
+def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_instances={},cid="all",descrip="keep_features"):
 
     ud = update_classifier_accuracy(selection=selection,mode=mode)
     if cid=="all":
@@ -178,10 +181,10 @@ def use_trained_classifiers(selection="r",mode="unigram",test_tweets={},test_ins
             for each in test_tweets.keys():
                 cv.alpha_vote(each)
             alpha_vote_dict = cv.evaluate_results()
-            score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(), testset_instances,mode=mode,cid=key)
+            score_evaluated_classifier(alpha_vote_dict, test_tweets.keys(), testset_instances,mode=mode,cid=key,descrip=descrip)
 
 
-def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="r",mode="unigram",cid="all"):
+def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instances,selection="r",mode="unigram",cid="all",descrip="keep_features"):
     ta= target_alpha_vote_dict
     num_correct = 0
     num_wrong =0
@@ -209,7 +212,7 @@ def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instanc
 
     total = num_correct + num_wrong
     percent = float(num_correct)/total
-    result_file = "{0}/{1}/keep_features{2}.txt".format("cEvaluations",mode,len(tweet_keys))
+    result_file = "{0}/{1}/{3}{2}.txt".format("cEvaluations",mode,len(tweet_keys),descrip)
 
     with open(result_file,"a") as f:
         # total,correct,percent,numneg,numpos
@@ -277,14 +280,15 @@ if __name__=='__main__':
     random.seed(0)
     random.shuffle(keys)
     dist = get_baseline(instances)
-    #combined_misc,used_keys = combine_evaluated_misc()
-    #combined_ngrames,used_ngrams = combine_evaluated_ngrams()
     
 
-    train_ngrams_bykeepfeatures()
+    # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
+   # train_ngrams_bykeepfeatures()
+   # use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="keep_features")
+     
 
-    use_trained_classifiers(selection="r", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv")
-   
+    train_all_misc()
+    use_trained_classifiers(selection="default",mode="misc",test_tweets=testset_tweets,test_instances=testset_instances,cid="indiv",descrip="emotorepeat")
 
 
 
