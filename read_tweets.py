@@ -49,7 +49,7 @@ def get_test_data(test_keys):
         test_instances[each] = instances[each]
     return test_tweets,test_instances
 
-def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="r",rank=1500):
+def get_ngram_classifiers(keys,existing_class={},word=True,pos=True,selection="r",rank=2000):
 
 
     classifier_dict = {}
@@ -62,13 +62,13 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=False,selection="
         unigram_classifier.show_features(20)
         classifier_dict[unigram_classifier.id] = unigram_classifier
    
-    """bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection,keep_features=keep_features)
+    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=pos,merge=True,model=False,selection=selection,rank=rank)
     if bigram_classifier.id in existing_class:
         print bigram_classifier.id + "already evaluated"
     else:
         bigram_classifier.train_classifier()
         bigram_classifier.show_features(20)
-        classifier_dict[bigram_classifier.id] = bigram_classifier"""
+        classifier_dict[bigram_classifier.id] = bigram_classifier
     """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
     trigram_classifier.train_classifier()
     trigram_classifier.show_features(20)"""
@@ -119,7 +119,7 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
     #classifier_dict[weib_classifier.id] = weib_classifier
 
     classifier_dict = {}
-    emot_classifier = EmoticonClassifier(tweets=tweets,instances=instances,keys=keys,model=False,selection=selection)
+    """emot_classifier = EmoticonClassifier(tweets=tweets,instances=instances,keys=keys,model=False,selection=selection)
     if emot_classifier.id in existing_class:
         print emot_classifier.id + " already evaluated"
     else:
@@ -132,7 +132,7 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
     else:
         repeat_classifier.train_classifier()
         repeat_classifier.show_features()
-        classifier_dict[repeat_classifier.id]=repeat_classifier
+        classifier_dict[repeat_classifier.id]=repeat_classifier"""
 
     weib_classifier = WeibClassifier(tweets=tweets,instances=instances,keys=keys,model=False,polarity_dict=polarity_dict,selection=selection,tag_map=tag_map)
     if weib_classifier.id in existing_class:
@@ -141,6 +141,13 @@ def get_misc_classifiers(keys,existing_class = {},selection="default"):
         weib_classifier.train_classifier()
         weib_classifier.show_features()
         classifier_dict[weib_classifier.id] = weib_classifier
+    tag_count_classifier = PosTagClassifier(tweets=tweets,instances=instances,keys=keys,model=False,selection=selection)
+    if tag_count_classifier.id in existing_class:
+        print tag_count_classifier.id + " already evaluated"
+    else:
+        tag_count_classifier.train_classifier()
+        tag_count_classifier.show_features()
+        classifier_dict[tag_count_classifier.id] = tag_count_classifier
 
    # tags = ["E","!","A","!"]
 
@@ -327,17 +334,23 @@ if __name__=='__main__':
     
 
     # NGRAM(unigram)EVALUATIONS BY keepfeature (r=[0.1-1])
+
     train_ngrams_byrank()
     train_all_misc()
+    buf = 80 * "*"
     ngram_res_dict = use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
     misc_res_dict = use_trained_classifiers(selection="default", mode="misc", test_tweets=testset_tweets, test_instances = testset_instances, cid="indiv", descrip="emotorepeat")
     print misc_res_dict.keys()
     accum_votes = {}
     res_dict = dict(ngram_res_dict.items() + misc_res_dict.items())
+    num_class= len(res_dict)
+    resfname = "fulloutput-testset:{0}_class:{1}class.txt".format(len(testset_instances),num_class)
+    resfile = open(resfname,"wb")
     for key in testset_instances.keys():
         if key not in accum_votes:
             accum_votes[key] = {}
-        print "\n{0}\t{1}\n".format(key,testset_instances[key].label)
+        head="{0}\tact:{1}\n".format(key,testset_instances[key].label)
+        resfile.write(head)
         for class_key,result in res_dict.items():
                 if key in result:
                   vote,conf = result[key]
@@ -348,7 +361,11 @@ if __name__=='__main__':
         tmp = accum_votes[key]
         ranked = sorted(tmp,key = lambda x: tmp[x][1],reverse=True)
         for val,ckey in enumerate(ranked):
-            print val,ckey.split(",")[0],tmp[ckey]
+
+            row = "{0},{1},{2}\n".format(val,ckey.split(",")[0],tmp[ckey])
+            resfile.write(row)
+        resfile.write("{0}\n".format(buf))
+    resfile.close
 
 
     """train_all_misc()

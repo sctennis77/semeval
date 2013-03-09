@@ -14,10 +14,11 @@ class NgramClassifier(Classifier):
 		self.include_word = kargs["word"]
 		self.mode= kargs["mode"]
 		self.rank = kargs['rank'] #int(self.num_ngrams *self.keep_features)
-		self.id="ngram{0},m:{1},w:{2},t:{3},s:{4},r:{5}".format(self.num_items,self.mode,self.include_word,self.inclued_pos,self.selection,self.rank)
+		self.id="{1}{0},w:{2},t:{3},s:{4},r:{5}".format(self.num_items,self.mode,self.include_word,self.inclued_pos,self.selection,self.rank)
 		self.debug=False
 		self.ngram_dict = self.get_ranked_ngrams()
 		self.ranked_ngrams = sorted(self.ngram_dict,key = lambda x: self.ngram_dict[x],reverse=True)
+		self.ngram_dict = {}
 		self.num_ngrams = len(self.ranked_ngrams)
 		self.prepare_features()
 
@@ -80,6 +81,7 @@ class NgramClassifier(Classifier):
 
 		ngram_list = self.get_selected_text(self.tweets[key])
 		document_ngrams = set(ngram_list)
+	#	print document_ngrams
 		features = {}
 
 		for ngram in ngrams:

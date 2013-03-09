@@ -95,7 +95,9 @@ def assign_target_phrase(tweets,instances,tagged_tweets):
             new_target = tagged_text[:after_start]
         else:
             new_target = tagged_text[:]
-        tweet.target = new_target
+        lowered_target = [(word.lower(),tag) for word,tag in new_target]
+
+        tweet.target = lowered_target
         assigned_tweets[key] = tweet
     return assigned_tweets
 

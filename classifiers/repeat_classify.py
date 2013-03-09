@@ -39,13 +39,15 @@ class RepeatClassifier(Classifier):
 				repeat = self.check_repeat_letters(word)
 				if repeat:
 					repeat_dict[repeat] = repeat_dict.get(repeat,0) + 1
+		print repeat_dict
 		return repeat_dict
 
 	def build_feature_vector(self,key):
 		features = {}
-		words = [word for word,tag in self.get_selected_text(self.tweets[key])]
+		words = [self.check_repeat_letters(word) for word,tag in self.get_selected_text(self.tweets[key])]
 		for repeat in set(self.repeat_dict.keys()):
 			features["repeat({0})".format(repeat)] = (repeat in words)
+		print features
 
 		return features
 
