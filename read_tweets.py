@@ -111,7 +111,7 @@ def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=F
 def train_ngrams_byrank():
 
     # word
-    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=True,rank=2000)
+    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=True,rank=3000)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
