@@ -13,7 +13,7 @@ class PosTagClassifier(Classifier):
 
 
 	def build_feature_vector(self,key):
-		check_tags = ["A","R","!","^","E","G","D","Z","M","&"]
+		check_tags = ["A","R","!","E"]
 		# checks for emoticon in tweet -> labels that emoticon:True
 		# two ways to do this --> contains any emoticon True/False or specific ones
 		# doing binary for now --> THIS SHOULD CHANGE

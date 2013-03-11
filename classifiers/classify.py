@@ -154,6 +154,7 @@ class Classifier:
 		pos = self.inclued_pos
 		word = self.include_word
 		stopset = set(stopwords.words("english"))
+		stopset.remove("not")
 		if stop:
 			if word and pos:
 				selection = [(w.lower(),p) for w,p in word_list if w.lower() not in stopset]

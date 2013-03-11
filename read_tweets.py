@@ -2,7 +2,7 @@
 
 import sys
 
-from prepare_data import prepare_tweet_data
+from prepare_data import prepare_tweet_data,prepare_test_data
 #from parse_emot_tweets import emot_tagged_tweets,emot_instances
 import random
 import cPickle
@@ -69,9 +69,14 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=True,selection="r
         bigram_classifier.train_classifier()
         bigram_classifier.show_features(20)
         classifier_dict[bigram_classifier.id] = bigram_classifier
-    """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=word,pos=pos,merge=True,model=False,selection=selection)
-    trigram_classifier.train_classifier()
-    trigram_classifier.show_features(20)"""
+    
+    trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=False,pos=True,merge=True,model=False,selection=selection,rank=rank)
+    if trigram_classifier.id in existing_class:
+        print trigram_classifier.id + "already evaluated"
+    else:
+        trigram_classifier.train_classifier()
+        trigram_classifier.show_features(20)
+        classifier_dict[trigram_classifier.id] = trigram_classifier
 
     #classifier_dict[trigram_classifier.id] = trigram_classifier
     #cout = "cresults/pickles/ngram/{0}ngram_pos_word_classifiers_{1}.pkl".format(len(keys),len(classifier_dict))
@@ -288,7 +293,7 @@ if __name__=='__main__':
         # normal dataset
     tweets,instances,tag_map = prepare_tweet_data(tsvfile,task)
     print tag_map
-    testset_tweets,testset_instances,test_tag_map, = prepare_tweet_data(testfile, task)        
+    testset_tweets,testset_instances,test_tag_map = prepare_test_data(testfile,task)        
     # lazy cleaning of objective and neutral
     objectives = [key for key in tweets if instances[key].label == "objective" or instances[key].label == "neutral"]
     popped = 0
@@ -304,7 +309,7 @@ if __name__=='__main__':
             popped+=1
         elif task == "B":
             instances[key].label = "neutral"
-    test_obj = [key for key in testset_tweets if testset_instances[key].label =="objective" or testset_instances[key].label == "neutral"]
+    """test_obj = [key for key in testset_tweets if testset_instances[key].label =="objective" or testset_instances[key].label == "neutral"]
     for key in test_obj:
         if testset_instances[key] == "neutral":
             tneu +=1
@@ -314,7 +319,7 @@ if __name__=='__main__':
             tpopped+=1
 
     print "removed {0} total {1} neutral from training dataset\n".format(popped,neu_count)
-    #print "removed {0} total {1} neutral from testing dataset\n".format(tpopped,tneu)
+    #print "removed {0} total {1} neutral from testing dataset\n".format(tpopped,tneu)"""
 
    
 
@@ -346,6 +351,9 @@ if __name__=='__main__':
     num_class= len(res_dict)
     resfname = "fulloutput-testset:{0}_class:{1}class.txt".format(len(testset_instances),num_class)
     resfile = open(resfname,"wb")
+    cor = 0
+    wro = 0
+    # vote from top 2 then take the tiebreaker from second two
     for key in testset_instances.keys():
         if key not in accum_votes:
             accum_votes[key] = {}

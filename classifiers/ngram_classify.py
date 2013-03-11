@@ -1,6 +1,5 @@
 from nltk.metrics import BigramAssocMeasures
 from classify import Classifier,nltk
-from nltk.corpus import stopwords
 # feature set = lists of ({<feature_dict>},classification) pairs
 # to combine dictionaries dict(d1.items() + d2.items())
 # todo --> build a voting system
@@ -72,14 +71,12 @@ class NgramClassifier(Classifier):
 			except:
 				continue
 		return ngram_dict
-		
-
+	
 
 	def word_features(self,key):
 
 		ngrams = set(self.ranked_ngrams[:self.rank])
-
-		ngram_list = self.get_selected_text(self.tweets[key])
+		ngram_list = self.get_selected_text(self.tweets[key],False)
 		document_ngrams = set(ngram_list)
 	#	print document_ngrams
 		features = {}

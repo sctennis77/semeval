@@ -26,10 +26,43 @@ def prepare_tweet_data(tsvfile,task):
     targeted_tweets = find_tweet_targets(tweets,instances)
     finished_tweets = assign_target_phrase(targeted_tweets,instances,tagged_tweets)
     #tweets = set_tagged_target_context(tweets, instances, tagged_tweets)
-
-
-    
     return finished_tweets,instances,tag_map
+
+def prepare_test_data(tsvfile,task):
+    tsvfile = tsvfile.split("/")[1]
+    tweets_file = "tweet_"+tsvfile.replace(".tsv",".pkl")
+    instance_file = "instance_"+tsvfile.replace(".tsv",".pkl")
+    content_file = "content_{0}".format(tsvfile)
+    content_file = "content_{0}".format(tsvfile)
+    tweets = cPickle.load(open(tweets_file,"rb"))
+    instances = cPickle.load(open(instance_file,"rb"))
+    tagged_file = tag_content(content_file,tweets)
+    tag_map,tagger,tagged_tweets = load_parsed_tweets(tagged_file)   #probably fix this based on a parameter
+    targeted_tweets = find_testtweet_targets(tweets, instances)
+    finished_tweets = assign_target_phrase(targeted_tweets, instances, tagged_tweets)
+    return finished_tweets,instances,tag_map
+
+
+def find_testtweet_targets(tweets,instances):
+    new_tweets = {}
+    grouped_tweets = {}
+    for uid,tweet in tweets.items():
+        t = tweet.text
+        if t not in grouped_tweets:
+            grouped_tweets[t] = []
+        grouped_tweets[t].append(uid)
+
+    for uid,tweet in tweets.items():
+        grouped = grouped_tweets[tweet.text]
+
+        grouped.remove(uid)
+        if grouped:
+            for oid in grouped:
+                tweet.other_targets[oid] = (instances[oid].startpos,instances[oid].endpos)
+     
+        print tweet.other_targets
+        new_tweets[uid] = tweet
+    return new_tweets
 
 def get_target_context(word_list,sidx,eidx):
     if sidx==eidx:
@@ -62,7 +95,7 @@ def assign_target_phrase(tweets,instances,tagged_tweets):
     print "extracting target phrases for this key"
     assigned_tweets = {}
     for key,tweet in tweets.items():
-        tagged_text = tagged_tweets[key]
+        tagged_text = tagged_tweets[tweet.key]
         tweet.tagged_tweet =tagged_text
         other_targets = tweet.other_targets
         curr_sidx =instances[key].startpos
@@ -125,7 +158,8 @@ def tag_content(content_file,tweets):
         print "data has not been tagged .... preparing output and running ark script"
         outfile = open(content_file,"w")
         for key,tweet in tweets.items():
-            uid,sid = key
+
+            uid,sid = tweet.key
             text = tweet.text
             if text:
                 try:
