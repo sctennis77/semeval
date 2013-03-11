@@ -62,7 +62,7 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=True,selection="r
         unigram_classifier.show_features(20)
         classifier_dict[unigram_classifier.id] = unigram_classifier
    
-    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=False,merge=True,model=False,selection=selection,rank=rank)
+    bigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="bigrams",word=word,pos=True,merge=True,model=False,selection=selection,rank=rank)
     if bigram_classifier.id in existing_class:
         print bigram_classifier.id + "already evaluated"
     else:
