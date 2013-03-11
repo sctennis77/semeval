@@ -103,7 +103,7 @@ def score_evaluated_classifier(target_alpha_vote_dict,tweet_keys,testset_instanc
     print "num_neg = ",neg
     print "c: {0} w: {1} acc: {2}".format(num_correct,num_wrong,float(num_correct)/total)
 
-def update_classifier_accuracy(selection="r",mode="unigram",baseline=0.65):
+def update_classifier_accuracy(selection="r",mode="unigram",baseline=0.7):
 
     # this should be mode 
     updated_dict = {}

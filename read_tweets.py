@@ -111,7 +111,7 @@ def train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=F
 def train_ngrams_byrank():
 
     # word
-    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=False,rank=2000)
+    existing = train_ngram_classifiers(mode="unigram",selection="ngramrank",word=True,pos=True,rank=2000)
     
     # word + pos
     #train_ngram_classifiers(selection="all",word=True,pos=True)
@@ -302,7 +302,7 @@ if __name__=='__main__':
     tpopped=0
     tneu = 0
     neu_count=0
-    pred_file = open("task2-swatcs-twitter-constrained.output","wb")
+    pred_file = open("task2-swatcs-A-twitter-constrained.output","wb")
     for key in objectives:
         if instances[key].label == "neutral":
             neu_count+=1
@@ -402,7 +402,7 @@ if __name__=='__main__':
                     vt,conf = tmp[each]
                     final_vote = vt"""
 
-        if diff>0:
+        if diff>.1:
             final_vote = "positive"
             num_pos+=1
         else:
