@@ -423,6 +423,8 @@ if __name__=='__main__':
         outstrs = [str(i) for i in out]
         answer = "\t".join(outstrs) +"\n"
         pred_file.write(answer)
+        if actual == "neutral":
+            print answer
 
 
 
