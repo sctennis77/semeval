@@ -70,13 +70,13 @@ def get_ngram_classifiers(keys,existing_class={},word=True,pos=True,selection="r
         bigram_classifier.show_features(20)
         classifier_dict[bigram_classifier.id] = bigram_classifier
     
-    trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=False,pos=True,merge=True,model=False,selection=selection,rank=rank)
+    """trigram_classifier = NgramClassifier(tweets=tweets,instances=instances,keys=keys,mode="trigrams",word=False,pos=True,merge=True,model=False,selection=selection,rank=rank)
     if trigram_classifier.id in existing_class:
         print trigram_classifier.id + "already evaluated"
     else:
         trigram_classifier.train_classifier()
         trigram_classifier.show_features(20)
-        classifier_dict[trigram_classifier.id] = trigram_classifier
+        classifier_dict[trigram_classifier.id] = trigram_classifier"""
 
     #classifier_dict[trigram_classifier.id] = trigram_classifier
     #cout = "cresults/pickles/ngram/{0}ngram_pos_word_classifiers_{1}.pkl".format(len(keys),len(classifier_dict))
@@ -272,6 +272,8 @@ if __name__=='__main__':
     # so this will eventually be python read_tweets.py <tsvfile> <task> <training> <pickle files if training false>
     # or we can hardcode the best word_prob and length_prob files (i.e the biggest)
     # should we eventually combine multiple word probs into a master ???
+    #- task2-GROUP-SUBTASK-DATASET-CONDITION.output
+#- task2-GROUP-SUBTASK-DATASET-CONDITION.description
     try:
         train = lambda x: True if x == "True" else False
         tsvfile = sys.argv[1]
@@ -300,6 +302,7 @@ if __name__=='__main__':
     tpopped=0
     tneu = 0
     neu_count=0
+    pred_file = open("task2-swatcs-twitter-constrained.output","wb")
     for key in objectives:
         if instances[key].label == "neutral":
             neu_count+=1
@@ -345,19 +348,28 @@ if __name__=='__main__':
     buf = 80 * "*"
     ngram_res_dict = use_trained_classifiers(selection="ngramrank", mode="unigram", test_tweets=testset_tweets, test_instances = testset_instances,cid="indiv",descrip="ngramrank")
     misc_res_dict = use_trained_classifiers(selection="default", mode="misc", test_tweets=testset_tweets, test_instances = testset_instances, cid="indiv", descrip="emotorepeat")
-    print misc_res_dict.keys()
     accum_votes = {}
     res_dict = dict(ngram_res_dict.items() + misc_res_dict.items())
     num_class= len(res_dict)
     resfname = "fulloutput-testset:{0}_class:{1}class.txt".format(len(testset_instances),num_class)
     resfile = open(resfname,"wb")
-    cor = 0
-    wro = 0
+    num_neg = 0
+    num_pos = 0 
+    correct = 0
+    wrong = 0
+    act_neg =0
+    act_pos = 0
     # vote from top 2 then take the tiebreaker from second two
     for key in testset_instances.keys():
+        result_dict = {"positive":[],"negative":[],"neutral":[],"novote":[]}
         if key not in accum_votes:
             accum_votes[key] = {}
-        head="{0}\tact:{1}\n".format(key,testset_instances[key].label)
+        actual = testset_instances[key].label
+        if actual == "positive":
+            act_pos+=1
+        elif actual =="negative":
+            act_neg +=1
+        head="{0}\tact:{1}\n".format(key,actual)
         resfile.write(head)
         for class_key,result in res_dict.items():
                 if key in result:
@@ -369,11 +381,55 @@ if __name__=='__main__':
         tmp = accum_votes[key]
         ranked = sorted(tmp,key = lambda x: tmp[x][1],reverse=True)
         for val,ckey in enumerate(ranked):
-
+            vt,conf = tmp[ckey]
+            result_dict[vt].append(conf)
             row = "{0},{1},{2}\n".format(val,ckey.split(",")[0],tmp[ckey])
             resfile.write(row)
         resfile.write("{0}\n".format(buf))
+        if result_dict["positive"]:
+            pavg = float(sum(result_dict["positive"]))/len(result_dict["positive"])
+        else:
+            pavg = 0.0
+        if result_dict["negative"]:
+            negavg = float(sum(result_dict["negative"]))/len(result_dict["negative"])
+        else:
+            negavg = 0.0
+        diff = pavg - negavg
+        """if abs(diff) <.2:
+            print "{0} close defaulting to weib".format(diff)
+            for each in ranked:
+                if each.startswith("w"):
+                    vt,conf = tmp[each]
+                    final_vote = vt"""
+
+        if diff>0:
+            final_vote = "positive"
+            num_pos+=1
+        else:
+            num_neg+=1
+            final_vote = "negative"
+        
+        if final_vote == actual:
+            correct+=1
+        else:
+
+            #print key,pavg-negavg,final_vote,actual
+            wrong+=1
+        id1,id2 = testset_tweets[key].key
+        text = " ".join([w for w,t in testset_tweets[key].target])
+        startpos = testset_instances[key].startpos
+        endpos = testset_instances[key].endpos
+        out = [id1,id2,startpos,endpos,final_vote,text]
+        outstrs = [str(i) for i in out]
+        answer = "\t".join(outstrs) +"\n"
+        pred_file.write(answer)
+
+
+
+    percent = float(correct)/(correct + wrong)
+    print "c: {0} w: {1}\tgp: {2} ap: {3}\tgn: {4} an: {5}\tpercent: {6}".format(correct,wrong,num_pos,act_pos,num_neg,act_neg,percent)
     resfile.close
+    pred_file.close
 
 
     """train_all_misc()

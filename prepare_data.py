@@ -60,7 +60,6 @@ def find_testtweet_targets(tweets,instances):
             for oid in grouped:
                 tweet.other_targets[oid] = (instances[oid].startpos,instances[oid].endpos)
      
-        print tweet.other_targets
         new_tweets[uid] = tweet
     return new_tweets
 
@@ -91,47 +90,58 @@ def find_tweet_targets(tweets,instances):
 
         # ["This","is","targetA","less","than",'targetB',"fuck you"]
 
-def assign_target_phrase(tweets,instances,tagged_tweets):
+def assign_target_phrase(tweets,instances,tagged_tweets,task="A"):
     print "extracting target phrases for this key"
     assigned_tweets = {}
-    for key,tweet in tweets.items():
-        tagged_text = tagged_tweets[tweet.key]
-        tweet.tagged_tweet =tagged_text
-        other_targets = tweet.other_targets
-        curr_sidx =instances[key].startpos
-        curr_eidx = instances[key].endpos
-        new_target = []
-        # does the target phrase have anything before it?
-        before = False
-        after=False
-        ordered_other = sorted(other_targets,key = lambda x:other_targets[x][0])
-        new_target = []
-        before_end = 0
-        after_start = 0
-        for each in ordered_other:
-            sidx,eidx = other_targets[each]
-            if sidx < curr_sidx:
-                before=True
-                before_end = eidx
-            if sidx > curr_eidx:
-                after_start = sidx
-                after = True
+    if task == "A":
+        for key,tweet in tweets.items():
+            tagged_text = tagged_tweets[tweet.key]
+            tweet.tagged_tweet =tagged_text
+            other_targets = tweet.other_targets
+            curr_sidx =instances[key].startpos
+            curr_eidx = instances[key].endpos
+            new_target = []
+            # does the target phrase have anything before it?
+            before = False
+            after=False
+            ordered_other = sorted(other_targets,key = lambda x:other_targets[x][0])
+            new_target = []
+            before_end = 0
+            after_start = 0
+            for each in ordered_other:
+                sidx,eidx = other_targets[each]
+                if sidx < curr_sidx:
+                    before=True
+                    before_end = eidx
+                if sidx > curr_eidx:
+                    after_start = sidx
+                    after = True
+                if before and after:
+                    break
+
             if before and after:
-                break
+                new_target = tagged_text[before_end:after_start]
 
-        if before and after:
-            new_target = tagged_text[before_end:after_start]
+            elif before:
+                new_target = tagged_text[before_end:]
 
-        elif before:
-            new_target = tagged_text[before_end:]
-        elif after:
-            new_target = tagged_text[:after_start]
-        else:
+            elif after:
+                new_target = tagged_text[:after_start]
+            else:
+                new_target = tagged_text[:]
+
+            lowered_target = [(word.lower(),tag) for word,tag in new_target]
+
+            tweet.target = lowered_target
+            assigned_tweets[key] = tweet
+    elif task=="B":
+        for key,tweet in tweets.items():
+            tagged_text = tagged_tweets[tweet.key]
             new_target = tagged_text[:]
-        lowered_target = [(word.lower(),tag) for word,tag in new_target]
+            lowered_target = [(word.lower(),tag) for word,tag in new_target]
+            tweet.target = lowered_target
+            assigned_tweets[key] = tweet
 
-        tweet.target = lowered_target
-        assigned_tweets[key] = tweet
     return assigned_tweets
 
 

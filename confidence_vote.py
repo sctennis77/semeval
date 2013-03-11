@@ -42,6 +42,7 @@ class ConfidenceVote(Vote):
 					row.append(label)
 					res_dict[key][rounded].append(row)
 				else:
+					# append neutral here
 					print "no conf for diff={0} rounded={1}\n".format(diff,rounded)
 		# if updating class dict dont need this, not sure yet
 		return res_dict

@@ -31,14 +31,13 @@ class WeibClassifier(Classifier):
 				neg1 = True
 				negator = word
 			
-			elif neg1 and tag == "A":
+			elif neg1 and each in self.polarity_dict:
 				neg_found = word
 				print "negated ",word
-				if each in self.polarity_dict:
-					wpolarity = self.polarity_dict[each].polarity
-					negpolarity = "positive" if wpolarity == "negative" else "negative"
-					features["lexicon_label({0})".format(negator+neg_found)] = negpolarity
-					features["lexicon_strength({0})".format(negator+self.polarity_dict[each].type)] = negpolarity
+				wpolarity = self.polarity_dict[each].polarity
+				negpolarity = "positive" if wpolarity == "negative" else "negative"
+				features["lexicon_label({0})".format(negator+neg_found)] = negpolarity
+				features["lexicon_strength({0})".format(negator+self.polarity_dict[each].type)] = negpolarity
 				neg1=False
 			elif each in self.polarity_dict:
 				features["lexicon_label({0})".format(self.polarity_dict[each].word)] = self.polarity_dict[each].polarity
