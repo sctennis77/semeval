@@ -16,13 +16,13 @@ for each in keep:
 datafile = open(tsvfile.replace(".tsv",".dat"),"rb")
 tweet_dict = {}
 instance_dict = {}
-task = "A"
+task = "B"
 for each in datafile:
 	try:
 		if task == "A":
 			sid,uid,startpos,endpos,label,text = each.split("\t")
 		elif task == "B":
-			sid,uid,keyword,label,text = each.split("\t")
+			sid,uid,label,text = each.split("\t")
 		saved = False
 		for letter in string.uppercase:
 			if saved == True:
@@ -50,7 +50,7 @@ for each in datafile:
 				if task == "A":
 					instance_dict[key] = Instance(uid=uid,sid=sid,task="A",key=key,startpos=startpos,endpos=endpos,label=label)
 				elif task == "B":
-					instance_dict[key] = Instance(uid=uid,sid=sid,task="B",key=key,keyword=keyword,label=label)
+					instance_dict[key] = Instance(uid=uid,sid=sid,task="B",key=key,keyword=None,label=label)
 	except:
 		print "failed to parse {0}\n".format(each)
 

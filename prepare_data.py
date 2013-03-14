@@ -23,8 +23,11 @@ def prepare_tweet_data(tsvfile,task):
     # read tagged stuff
     tag_map,tagger,tagged_tweets = load_parsed_tweets(tagged_file)   #probably fix this based on a parameter
     # apply tags
-    targeted_tweets = find_tweet_targets(tweets,instances)
-    finished_tweets = assign_target_phrase(targeted_tweets,instances,tagged_tweets)
+    if task == "A":
+        targeted_tweets = find_tweet_targets(tweets,instances)
+        finished_tweets = assign_target_phrase(targeted_tweets,instances,tagged_tweets)
+    elif task == "emot":
+        finished_tweets =assign_target_phrase(tweets, instances, tagged_tweets, task)
     #tweets = set_tagged_target_context(tweets, instances, tagged_tweets)
     return finished_tweets,instances,tag_map
 
@@ -38,8 +41,11 @@ def prepare_test_data(tsvfile,task):
     instances = cPickle.load(open(instance_file,"rb"))
     tagged_file = tag_content(content_file,tweets)
     tag_map,tagger,tagged_tweets = load_parsed_tweets(tagged_file)   #probably fix this based on a parameter
-    targeted_tweets = find_testtweet_targets(tweets, instances)
-    finished_tweets = assign_target_phrase(targeted_tweets, instances, tagged_tweets)
+    if task == "A":
+        targeted_tweets = find_tweet_targets(tweets,instances)
+        finished_tweets = assign_target_phrase(targeted_tweets,instances,tagged_tweets)
+    elif task == "B":
+        finished_tweets =assign_target_phrase(tweets, instances, tagged_tweets, task)
     return finished_tweets,instances,tag_map
 
 
@@ -134,7 +140,7 @@ def assign_target_phrase(tweets,instances,tagged_tweets,task="A"):
 
             tweet.target = lowered_target
             assigned_tweets[key] = tweet
-    elif task=="B":
+    elif task=="emot":
         for key,tweet in tweets.items():
             tagged_text = tagged_tweets[tweet.key]
             new_target = tagged_text[:]

@@ -293,9 +293,12 @@ if __name__=='__main__':
      ##  instances = emot_instances
 
         # normal dataset
-    tweets,instances,tag_map = prepare_tweet_data(tsvfile,task)
-    print tag_map
-    testset_tweets,testset_instances,test_tag_map = prepare_test_data(testfile,task)        
+    #tweets,instances,tag_map = prepare_tweet_data(tsvfile,task)
+    emot_tweets= cPickle.load(open("tweet_emoticondata.pkl","rb"))
+    emot_instances= cPickle.load(open("instance_emoticondata.pkl","rb"))
+    tweets =emot_tweets
+    instances = emot_instances
+    testset_tweets,testset_instances,tag_map = prepare_test_data(testfile,task)        
     # lazy cleaning of objective and neutral
     objectives = [key for key in tweets if instances[key].label == "objective" or instances[key].label == "neutral"]
     popped = 0
@@ -312,7 +315,7 @@ if __name__=='__main__':
             popped+=1
         elif task == "B":
             instances[key].label = "neutral"
-    """test_obj = [key for key in testset_tweets if testset_instances[key].label =="objective" or testset_instances[key].label == "neutral"]
+    test_obj = [key for key in testset_tweets if testset_instances[key].label =="objective" or testset_instances[key].label == "neutral"]
     for key in test_obj:
         if testset_instances[key] == "neutral":
             tneu +=1
@@ -395,12 +398,6 @@ if __name__=='__main__':
         else:
             negavg = 0.0
         diff = pavg - negavg
-        """if abs(diff) <.2:
-            print "{0} close defaulting to weib".format(diff)
-            for each in ranked:
-                if each.startswith("w"):
-                    vt,conf = tmp[each]
-                    final_vote = vt"""
 
         if diff>.1:
             final_vote = "positive"
